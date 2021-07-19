@@ -3,7 +3,7 @@
 
 A command line to-do app written in Rust.
 
-**README Sections:** [Options](#options) — [Installation](#installation)
+**README Sections:** [Options](#options) — [Installation](#installation) - [License](#license)
 
 <!-- Badges -->
 </div>
@@ -50,3 +50,6 @@ $ cargo build --release
 $ ./target/release/rusty-journal --version
 Rusty Journal 0.1.0
 ```
+
+## License
+Distributed under the MIT License. See [`LICENSE`](./LICENSE) for more information.
