@@ -8,7 +8,7 @@ A command line to-do app written in Rust.
 <!-- Badges -->
 </div>
 
-<!-- ![Screenshots of Rusty Journal](screenshots.png) -->
+![Screenshots of Rusty Journal](screenshot.png)
 
 ---
 
