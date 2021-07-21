@@ -28,6 +28,7 @@ impl fmt::Display for Task {
     }
 }
 
+/// This function opens a file, seek the cursor to the first position and returns a list of tasks.
 fn collect_tasks(mut file: &File) -> Result<Vec<Task>> {
     // Rewind the file before reading it.
     file.seek(SeekFrom::Start(0))?;
@@ -106,4 +107,32 @@ pub fn list_tasks(journal_path: PathBuf) -> Result<()> {
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::Builder;
+
+    #[test]
+    fn test_add_task() -> Result<()> {
+        // [mock] Create a tmp file and a task
+        let tmp_file = Builder::new().tempfile()?;
+        let path = PathBuf::from(tmp_file.path());
+        let text = String::from("Hello, world!");
+        let task = Task::new(text.clone());
+
+        // [test]
+        add_task(path, task)?;
+
+        // Get the created task reading the tmp file
+        let file = tmp_file.reopen()?;
+        let tasks = collect_tasks(&file).unwrap();
+        let result = tasks.get(0).unwrap();
+
+        assert_eq!(result.text, text);
+
+        drop(tmp_file);
+        Ok(())
+    }
 }
