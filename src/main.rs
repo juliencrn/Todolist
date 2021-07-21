@@ -4,6 +4,7 @@ use structopt::StructOpt;
 
 use anyhow::anyhow;
 use cli::{Action::*, CommandLineArgs};
+use std::io::stdout;
 use std::path::PathBuf;
 use tasks::Task;
 
@@ -29,7 +30,7 @@ fn main() -> anyhow::Result<()> {
     // Perform the action.
     match action {
         Add { text } => tasks::add_task(journal_file, Task::new(text)),
-        List => tasks::list_tasks(journal_file),
+        List => tasks::list_tasks(journal_file, &mut stdout()),
         Done { position } => tasks::complete_task(journal_file, position),
     }?;
 
