@@ -46,15 +46,17 @@ fn collect_tasks(mut file: &File) -> Result<Vec<Task>> {
     Ok(tasks)
 }
 
-pub fn add_task(journal_path: PathBuf, task: Task) -> Result<()> {
-    // Open the file.
+fn open_journal_file(journal_path: PathBuf) -> Result<File> {
     let file = OpenOptions::new()
         .read(true)
         .write(true)
         .create(true)
         .open(journal_path)?;
+    Ok(file)
+}
 
-    // Consume the file's contents as a vector of tasks.
+pub fn add_task(journal_path: PathBuf, task: Task) -> Result<()> {
+    let file = open_journal_file(journal_path)?;
     let mut tasks = collect_tasks(&file)?;
 
     // Write the modified task list back into the file.
@@ -65,13 +67,7 @@ pub fn add_task(journal_path: PathBuf, task: Task) -> Result<()> {
 }
 
 pub fn complete_task(journal_path: PathBuf, task_position: usize) -> Result<()> {
-    // Open the file.
-    let file = OpenOptions::new()
-        .read(true)
-        .write(true)
-        .open(journal_path)?;
-
-    // Consume the file's contents as a vector of tasks.
+    let file = open_journal_file(journal_path)?;
     let mut tasks = collect_tasks(&file)?;
 
     // Remove the task.
@@ -88,10 +84,7 @@ pub fn complete_task(journal_path: PathBuf, task_position: usize) -> Result<()> 
 }
 
 pub fn list_tasks(journal_path: PathBuf) -> Result<()> {
-    // Open the file.
-    let file = OpenOptions::new().read(true).open(journal_path)?;
-
-    // Parse the file and collect the tasks.
+    let file = open_journal_file(journal_path)?;
     let tasks = collect_tasks(&file)?;
 
     // Enumerate and display tasks, if any.
@@ -112,25 +105,58 @@ pub fn list_tasks(journal_path: PathBuf) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tempfile::Builder;
+    use tempfile::{Builder, NamedTempFile};
+
+    fn get_tasks(tmp_file: &NamedTempFile) -> Result<Vec<Task>> {
+        let file = tmp_file.reopen()?;
+        let tasks = collect_tasks(&file).unwrap();
+        Ok(tasks)
+    }
 
     #[test]
     fn test_add_task() -> Result<()> {
-        // [mock] Create a tmp file and a task
+        // Create a tmp file and a task
         let tmp_file = Builder::new().tempfile()?;
-        let path = PathBuf::from(tmp_file.path());
-        let text = String::from("Hello, world!");
-        let task = Task::new(text.clone());
+        let test_text = String::from("Hello, world!");
 
         // [test]
+        let path = PathBuf::from(tmp_file.path());
+        let task = Task::new(test_text.clone());
         add_task(path, task)?;
 
         // Get the created task reading the tmp file
-        let file = tmp_file.reopen()?;
-        let tasks = collect_tasks(&file).unwrap();
+        let tasks = get_tasks(&tmp_file)?;
         let result = tasks.get(0).unwrap();
 
-        assert_eq!(result.text, text);
+        assert_eq!(result.text, test_text);
+
+        drop(tmp_file);
+        Ok(())
+    }
+
+    #[test]
+    fn test_complete_task() -> Result<()> {
+        let tmp_file = Builder::new().tempfile()?;
+
+        // Create test task and checks if it's created in the tmp file
+        let path = PathBuf::from(tmp_file.path());
+        let task = Task::new(String::from("Hello, world!"));
+
+        add_task(path, task)?;
+
+        let tasks = get_tasks(&tmp_file)?;
+
+        assert_eq!(tasks.len(), 1);
+
+        // [test] Now remove it an test if we have a empty array from the tmp file
+        let path = PathBuf::from(tmp_file.path());
+
+        complete_task(path, 1)?;
+
+        // Get the result from the tmp file
+        let tasks = get_tasks(&tmp_file)?;
+
+        assert_eq!(tasks.len(), 0);
 
         drop(tmp_file);
         Ok(())
