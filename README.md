@@ -19,7 +19,7 @@ Rusty Journal 0.1.0
 A command line to-do app written in Rust
 
 USAGE:
-    rusty-journal [OPTIONS] <SUBCOMMAND>
+    rusty_journal [OPTIONS] <SUBCOMMAND>
 
 FLAGS:
     -h, --help       Prints help information
@@ -47,7 +47,7 @@ Once Rust is installed, you can compile _Rusty journal_ with Cargo:
 $ git clone https://github.com/juliencrn/rusty-journal
 $ cd rusty-journal
 $ cargo build --release
-$ ./target/release/rusty-journal --version
+$ ./target/release/rusty_journal --version
 Rusty Journal 0.1.0
 ```
 
