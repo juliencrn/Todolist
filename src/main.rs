@@ -1,38 +1,12 @@
-mod cli;
-mod tasks;
+use anyhow;
+use rusty_journal::cli::CommandLineArgs;
 use structopt::StructOpt;
-
-use anyhow::anyhow;
-use cli::{Action::*, CommandLineArgs};
-use std::io::stdout;
-use std::path::PathBuf;
-use tasks::Task;
-
-fn find_default_journal_file() -> Option<PathBuf> {
-    home::home_dir().map(|mut path| {
-        path.push(".rusty-journal.json");
-        path
-    })
-}
 
 fn main() -> anyhow::Result<()> {
     // Get the command-line arguments.
-    let CommandLineArgs {
-        action,
-        journal_file,
-    } = CommandLineArgs::from_args();
+    let args = CommandLineArgs::from_args();
 
-    // Unpack the journal file.
-    let journal_file = journal_file
-        .or_else(find_default_journal_file)
-        .ok_or(anyhow!("Failed to find journal file"))?;
-
-    // Perform the action.
-    match action {
-        Add { text } => tasks::add_task(journal_file, Task::new(text)),
-        List => tasks::list_tasks(journal_file, &mut stdout()),
-        Done { position } => tasks::complete_task(journal_file, position),
-    }?;
+    rusty_journal::run(args)?;
 
     Ok(())
 }
