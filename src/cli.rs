@@ -15,6 +15,18 @@ pub enum Action {
     },
     /// List all tasks in the journal file.
     List,
+    /// Update task content
+    Update {
+        #[structopt()]
+        id: i32,
+        #[structopt()]
+        text: String,
+    },
+    /// Delete an given task
+    Delete {
+        #[structopt()]
+        id: i32,
+    },
 }
 
 #[derive(Debug, StructOpt)]

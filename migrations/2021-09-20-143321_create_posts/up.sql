@@ -1,0 +1,7 @@
+CREATE TABLE posts (
+	"id"	INTEGER NOT NULL UNIQUE,
+	"title"	TEXT NOT NULL,
+	"body"	TEXT NOT NULL,
+	"published"	INTEGER NOT NULL CHECK (published IN (0, 1)),
+	PRIMARY KEY("id" AUTOINCREMENT)
+);

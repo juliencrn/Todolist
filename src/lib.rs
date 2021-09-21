@@ -1,32 +1,42 @@
+#[macro_use]
+extern crate diesel;
+extern crate dotenv;
+
+// use self::models::{NewPost, Post};
+use diesel::prelude::*;
+use dotenv::dotenv;
+use std::env;
+use std::io::stdout;
+
 pub mod cli;
+pub mod models;
+pub mod schema;
 pub mod tasks;
 
-use anyhow::anyhow;
+// use anyhow::anyhow;
 use cli::{Action::*, CommandLineArgs};
-use std::io::stdout;
-use std::path::PathBuf;
-use tasks::Task;
 
 pub fn run(cli_args: CommandLineArgs) -> anyhow::Result<()> {
-    // Unpack the journal file and apply default if it's empty.
-    let journal_file = cli_args
-        .journal_file
-        .or_else(find_default_journal_file)
-        .ok_or(anyhow!("Failed to find journal file"))?;
+    let connection = establish_connection();
 
     // Perform the action.
     match cli_args.action {
-        Add { text } => tasks::add_task(journal_file, Task::new(text)),
-        List => tasks::list_tasks(journal_file, &mut stdout()),
-        Done { position } => tasks::complete_task(journal_file, position),
+        Add { text } => tasks::add(text, &connection),
+        Done { position } => todo!(),
+        // List => tasks::list(&connection),
+        List => tasks::list(&connection, &mut stdout()),
+        Update { id, text } => todo!(),
+        Delete { id } => todo!(),
     }?;
 
     Ok(())
 }
 
-fn find_default_journal_file() -> Option<PathBuf> {
-    home::home_dir().map(|mut path| {
-        path.push(".rusty-journal.json");
-        path
-    })
+fn establish_connection() -> SqliteConnection {
+    dotenv().ok();
+
+    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+
+    SqliteConnection::establish(&database_url)
+        .expect(&format!("Error connecting to {}", database_url))
 }
