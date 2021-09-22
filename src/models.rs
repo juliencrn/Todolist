@@ -8,8 +8,9 @@ pub struct Task {
     pub id: i32,
     pub text: String,
     pub completed: i32,
-    // pub created_at: chrono::NaiveDateTime,
-    // pub created_at: String,
+    /// diesel create must enable chrono feature
+    /// Timestamp without timezone, the memory align of Timestamp type in sqlite is same as libc::timeval?
+    pub created_at: chrono::NaiveDateTime,
 }
 
 #[derive(Insertable, Debug)]
@@ -22,7 +23,11 @@ pub struct NewTask {
 impl fmt::Display for Task {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let checkbox = if self.completed == 1 { "[*]" } else { "[ ]" };
-        write!(f, "{} - [{}] {:<50}", checkbox, self.id, self.text)
+        write!(
+            f,
+            "{} - [{}] {:<50} [{}]",
+            checkbox, self.id, self.text, self.created_at
+        )
     }
 }
 
