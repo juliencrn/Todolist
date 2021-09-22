@@ -23,6 +23,7 @@ pub fn run(cli_args: CommandLineArgs) -> anyhow::Result<()> {
         ListAll => models::list_all(&connection),
         Update { id, text } => models::update(id, text, &connection),
         Delete { id } => models::delete(id, &connection),
+        Reset => models::reset(&connection),
     }?;
 
     Ok(())

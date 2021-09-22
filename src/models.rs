@@ -119,3 +119,14 @@ pub fn delete(id: i32, connection: &SqliteConnection) -> anyhow::Result<()> {
 
     Ok(())
 }
+
+pub fn reset(connection: &SqliteConnection) -> anyhow::Result<()> {
+    use schema::tasks::dsl::tasks;
+
+    diesel::delete(tasks)
+        .execute(connection)
+        .expect(&format!("Unable to delete tasks"));
+
+    println!("Task list reset");
+    Ok(())
+}

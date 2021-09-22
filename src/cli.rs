@@ -28,6 +28,8 @@ pub enum Action {
         #[structopt()]
         id: i32,
     },
+    /// Delete all tasks
+    Reset,
 }
 
 #[derive(Debug, StructOpt)]
