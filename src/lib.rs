@@ -2,18 +2,14 @@
 extern crate diesel;
 extern crate dotenv;
 
-// use self::models::{NewPost, Post};
 use diesel::prelude::*;
 use dotenv::dotenv;
 use std::env;
-use std::io::stdout;
 
 pub mod cli;
 pub mod models;
 pub mod schema;
-pub mod tasks;
 
-// use anyhow::anyhow;
 use cli::{Action::*, CommandLineArgs};
 
 pub fn run(cli_args: CommandLineArgs) -> anyhow::Result<()> {
@@ -21,12 +17,12 @@ pub fn run(cli_args: CommandLineArgs) -> anyhow::Result<()> {
 
     // Perform the action.
     match cli_args.action {
-        Add { text } => tasks::add(text, &connection),
-        Done { position } => todo!(),
-        // List => tasks::list(&connection),
-        List => tasks::list(&connection, &mut stdout()),
-        Update { id, text } => todo!(),
-        Delete { id } => todo!(),
+        Add { text } => models::add(text, &connection),
+        Done { id } => models::complete(id, &connection),
+        List => models::list(&connection),
+        ListAll => models::list_all(&connection),
+        Update { id, text } => models::update(id, text, &connection),
+        Delete { id } => models::delete(id, &connection),
     }?;
 
     Ok(())

@@ -1,28 +1,29 @@
-use std::path::PathBuf;
 use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]
 pub enum Action {
-    /// Write tasks to the journal file.
+    /// Write a task to the journal file.
     Add {
         #[structopt()]
         text: String,
     },
-    /// Remove an entry from the journal file by position.
+    /// Set a task completed by id.
     Done {
         #[structopt()]
-        position: usize,
+        id: i32,
     },
-    /// List all tasks in the journal file.
+    /// List resting tasks from the journal file.
     List,
-    /// Update task content
+    /// List all tasks from the journal file.
+    ListAll,
+    /// Update task description by id
     Update {
         #[structopt()]
         id: i32,
         #[structopt()]
         text: String,
     },
-    /// Delete an given task
+    /// Delete an given task by id
     Delete {
         #[structopt()]
         id: i32,
@@ -32,13 +33,9 @@ pub enum Action {
 #[derive(Debug, StructOpt)]
 #[structopt(
     name = "Rusty Journal",
-    about = "A command line to-do app written in Rust"
+    about = "A command line to-do app written in Rust and SQLite"
 )]
 pub struct CommandLineArgs {
     #[structopt(subcommand)]
     pub action: Action,
-
-    /// Use a different journal file.
-    #[structopt(parse(from_os_str), short, long)]
-    pub journal_file: Option<PathBuf>,
 }

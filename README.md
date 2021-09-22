@@ -44,11 +44,22 @@ _Rusty journal_ is written in [Rust](https://www.rust-lang.org/), so you'll need
 Once Rust is installed, you can compile _Rusty journal_ with Cargo:
 
 ```bash
+# Download the repo
 $ git clone https://github.com/juliencrn/rusty-journal
 $ cd rusty-journal
+
+# Create an .env file with the database path
+$ echo "DATABASE_URL=testing_db.db" > .env
+
+# Initiate ORM
+$ diesel setup
+$ diesel migration run
+
+# Build, use...
 $ cargo build --release
 $ ./target/release/rusty_journal --version
-Rusty Journal 0.1.0
+> Rusty Journal 0.1.0
+$ cargo run -- --help
 ```
 
 ## License
