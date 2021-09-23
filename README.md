@@ -16,23 +16,24 @@ A command line to-do app written in Rust.
 
 ```
 Rusty Journal 0.1.0
-A command line to-do app written in Rust
+A command line to-do app written in Rust and SQLite
 
 USAGE:
-    rusty_journal [OPTIONS] <SUBCOMMAND>
+    rusty_journal <SUBCOMMAND>
 
 FLAGS:
     -h, --help       Prints help information
     -V, --version    Prints version information
 
-OPTIONS:
-    -j, --journal-file <journal-file>    Use a different journal file
-
 SUBCOMMANDS:
-    add     Write tasks to the journal file
-    done    Remove an entry from the journal file by position
-    help    Prints this message or the help of the given subcommand(s)
-    list    List all tasks in the journal file
+    add         Write a task to the journal file
+    delete      Delete an given task by id
+    done        Set a task completed by id
+    help        Prints this message or the help of the given subcommand(s)
+    list        List resting tasks from the journal file
+    list-all    List all tasks from the journal file
+    reset       Delete all tasks
+    update      Update task description by id
 ```
 
 ---

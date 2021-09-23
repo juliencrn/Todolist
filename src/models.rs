@@ -30,7 +30,7 @@ impl fmt::Display for Task {
 
         write!(
             f,
-            "{} - [{}] {:<50} [{}]",
+            "{} - [{}] {:<80} [{}]",
             checkbox, self.id, self.text, created_at
         )
     }
