@@ -1,84 +1,109 @@
+use assert_cmd::assert::Assert;
 use assert_cmd::Command;
 
-#[test]
-fn test_wrong_journal_file() {
-    let assert = Command::cargo_bin("rusty_journal")
-        .unwrap()
-        .arg("-j")
-        .arg("./unexistising/path/to/file")
+pub fn assert_create_task(text: &str) -> Result<Assert, Box<dyn std::error::Error>> {
+    let assert = Command::cargo_bin("rusty_journal")?
+        .args(["add", text])
+        .assert()
+        .success()
+        .stdout(predicates::str::contains("created"));
+
+    Ok(assert)
+}
+
+pub fn assert_update_task(id: &str, text: &str) -> Result<Assert, Box<dyn std::error::Error>> {
+    let assert = Command::cargo_bin("rusty_journal")?
+        .args(["update", id, text])
+        .assert()
+        .success()
+        .stdout(predicates::str::contains("updated"));
+
+    Ok(assert)
+}
+
+pub fn assert_complete_task(id: &str) -> Result<Assert, Box<dyn std::error::Error>> {
+    let assert = Command::cargo_bin("rusty_journal")?
+        .args(["done", id])
+        .assert()
+        .success()
+        .stdout(predicates::str::contains("completed"));
+
+    Ok(assert)
+}
+
+pub fn assert_delete_task(id: &str) -> Result<Assert, Box<dyn std::error::Error>> {
+    let assert = Command::cargo_bin("rusty_journal")?
+        .args(["delete", id])
+        .assert()
+        .success()
+        .stdout(predicates::str::contains("deleted"));
+
+    Ok(assert)
+}
+
+pub fn list_all() -> Result<Assert, Box<dyn std::error::Error>> {
+    let assert = Command::cargo_bin("rusty_journal")?
+        .arg("list-all")
+        .assert()
+        .success();
+
+    Ok(assert)
+}
+
+pub fn list() -> Result<Assert, Box<dyn std::error::Error>> {
+    let assert = Command::cargo_bin("rusty_journal")?
         .arg("list")
-        .assert();
-    assert
-        .failure()
-        .stderr(predicates::str::contains("No such file or directory"));
+        .assert()
+        .success();
+
+    Ok(assert)
+}
+
+pub fn assert_reset() -> Result<Assert, Box<dyn std::error::Error>> {
+    let assert = Command::cargo_bin("rusty_journal")?
+        .arg("reset")
+        .assert()
+        .success();
+
+    Ok(assert)
 }
 
 #[test]
-fn run_add_done_list_tasks() -> Result<(), Box<dyn std::error::Error>> {
-    let tmp_file = tempfile::Builder::new().tempfile()?;
+fn test() -> Result<(), Box<dyn std::error::Error>> {
+    let task_1 = "Hello, world!";
+    let task_1_updated = "Hello, JR!";
+    let task_2 = "Do that";
 
-    // Add a first task
-    let result = Command::cargo_bin("rusty_journal")?
-        .arg("-j")
-        .arg(tmp_file.path())
-        .args(["add", "Hello, world!"])
-        .ok();
-    assert!(result.is_ok());
+    assert_reset()?;
 
-    // Add a second task
-    let result = Command::cargo_bin("rusty_journal")?
-        .arg("-j")
-        .arg(tmp_file.path())
-        .args(["add", "Buy milk"])
-        .ok();
-    assert!(result.is_ok());
+    assert_create_task(task_1)?;
+    assert_create_task(task_2)?;
 
-    // List and check if we have our 2 tasks
-    let assert = Command::cargo_bin("rusty_journal")?
-        .arg("-j")
-        .arg(tmp_file.path())
-        .arg("list")
-        .assert();
-    assert
-        .success()
-        .stdout(predicates::str::contains("Hello, world!"))
-        .stdout(predicates::str::contains("Buy milk"));
+    list_all()
+        .unwrap()
+        .stdout(predicates::str::contains(task_1))
+        .stdout(predicates::str::contains(task_2));
 
-    // Remove the first task
-    let result = Command::cargo_bin("rusty_journal")?
-        .arg("-j")
-        .arg(tmp_file.path())
-        .args(["done", "1"])
-        .ok();
-    assert!(result.is_ok());
+    assert_update_task("1", task_1_updated)?;
 
-    // List and check if we have 1 task and the first removed
-    let assert = Command::cargo_bin("rusty_journal")?
-        .arg("-j")
-        .arg(tmp_file.path())
-        .arg("list")
-        .assert();
-    assert
-        .success()
-        .stdout(predicates::str::is_match("1. Buy milk")?);
+    list_all()?
+        .stdout(predicates::str::diff(task_1))
+        .stdout(predicates::str::contains(task_1_updated))
+        .stdout(predicates::str::contains(task_2));
 
-    // Remove the last task
-    let result = Command::cargo_bin("rusty_journal")?
-        .arg("-j")
-        .arg(tmp_file.path())
-        .args(["done", "1"])
-        .ok();
-    assert!(result.is_ok());
+    assert_complete_task("1")?;
 
-    // List will be empty and display error message
-    let assert = Command::cargo_bin("rusty_journal")?
-        .arg("-j")
-        .arg(tmp_file.path())
-        .arg("list")
-        .assert();
-    assert
-        .success()
-        .stdout(predicates::str::is_match("Task list is empty!")?);
+    list()?
+        .stdout(predicates::str::diff(task_1))
+        .stdout(predicates::str::diff(task_1_updated))
+        .stdout(predicates::str::contains(task_2));
+
+    assert_delete_task("1")?;
+
+    list_all()?
+        .stdout(predicates::str::diff(task_1))
+        .stdout(predicates::str::diff(task_1_updated))
+        .stdout(predicates::str::contains(task_2));
 
     Ok(())
 }

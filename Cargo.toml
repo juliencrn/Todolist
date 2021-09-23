@@ -10,6 +10,11 @@ home = "0.5"
 anyhow = "1.0"
 structopt = "0.3"
 serde_json = "1.0"    # Add serde_json.
+dotenv = "0.15.0"
+
+[dependencies.diesel]  # Add serde in its own section.
+version = "1.4.4"
+features = ["sqlite", "chrono"]
 
 [dependencies.serde]  # Add serde in its own section.
 version = "1.0"
