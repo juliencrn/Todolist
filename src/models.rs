@@ -1,5 +1,9 @@
 use super::schema;
 use super::schema::tasks;
+use chrono::offset::Offset;
+use chrono::offset::TimeZone;
+use chrono::Local;
+use chrono::NaiveDateTime;
 use diesel::{sqlite::SqliteConnection, ExpressionMethods, QueryDsl, RunQueryDsl};
 use std::fmt;
 
@@ -8,8 +12,7 @@ pub struct Task {
     pub id: i32,
     pub text: String,
     pub completed: i32,
-    /// diesel create must enable chrono feature
-    /// Timestamp without timezone, the memory align of Timestamp type in sqlite is same as libc::timeval?
+    /// Timestamp without timezone
     pub created_at: chrono::NaiveDateTime,
 }
 
@@ -23,12 +26,27 @@ pub struct NewTask {
 impl fmt::Display for Task {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let checkbox = if self.completed == 1 { "[*]" } else { "[ ]" };
+        let created_at = get_local_date(&self.created_at);
+
         write!(
             f,
             "{} - [{}] {:<50} [{}]",
-            checkbox, self.id, self.text, self.created_at
+            checkbox, self.id, self.text, created_at
         )
     }
+}
+
+fn get_local_date(naive_date: &NaiveDateTime) -> NaiveDateTime {
+    let offset = Local
+        .offset_from_local_datetime(naive_date)
+        .unwrap()
+        .fix()
+        .local_minus_utc();
+
+    let timestamp = naive_date.timestamp();
+    let timestamp_tz = timestamp + offset as i64;
+
+    NaiveDateTime::from_timestamp(timestamp_tz, 0)
 }
 
 pub fn add(text: String, connection: &SqliteConnection) -> anyhow::Result<()> {
